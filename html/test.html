@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Item</title>
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+</head>
+
+<body>
+    <h1>Testing</h1>
+    기능 선택&nbsp;
+    <select name="option">
+        <option value="test">test</option>
+        <option value="create">create</option>
+        <option value="read">read</option>
+        <option value="update">update</option>
+        <option value="delete">delete</option>
+        <option value="list">list</option>
+    </select>
+    <p></p>
+    테이블&nbsp;
+    <textarea name="table" cols="15" rows="1"></textarea>
+    <p></p>
+    <textarea name="code" cols="100" rows="15"
+        onkeydown="if(event.keyCode===9){var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;}"></textarea>
+    <button id="test">Testing</button>
+    <script type="text/javascript" language="javascript">
+
+        $("#test").click(function () {
+            var option = $("select[name=option]").val();
+            var tablename = $('textarea[name="table"]:visible').val();
+            var textarea = $('textarea[name="code"]:visible').val();
+            //var test = "{ \"operation\" : \"" + option + "\", \"tableName\" : \"" +
+            //    tablename + "\", \"payload\" : {" + textarea.replace(/\t/gi, "") + "}}";
+            var test = "{\"operation\" : \"list\", \"tableName\":\"Testing\", \"payload\": {}}";
+            $.ajax({
+                type: "POST",
+                url: "https://xr52cr0gg6.execute-api.us-east-2.amazonaws.com/Testing_1/",
+                dataType: 'json',
+                contentType: 'application/json',
+                data: test,
+                success: successCall,
+                error: errorCall
+            });
+        });
+
+
+        function successCall(data) {
+            // key, value를 각 배열에 저장
+            var atr = [];
+            var keys = Array.from(Array(data.Count), () => Array());
+            var values = Array.from(Array(data.Count), () => Array());
+            for (var i = 0; i < data.Count; i++) {
+                $.each(data.Items[i], function (key, val) {
+                    atr.push(JSON.stringify(key).replace(/\"/gi, ""))
+                    keys[i].push(JSON.stringify(key).replace(/\"/gi, ""))
+                    values[i].push(JSON.stringify(val).replace(/\"/gi, ""))
+                });
+            }
+
+            // attribute 배열 중복제거 및 키 외 요소 정렬
+            var key = "id"; // 키값
+            atr = Array.from(new Set(atr));
+            atr.splice(atr.indexOf(key),1);
+            atr.sort();
+            atr.unshift(key);
+
+            // 2차원 배열 table 생성(기본값 undefined)
+            var table = Array.from(Array(data.Count), () => Array(atr.length));
+
+            // 데이터를 table 배열에 mapping
+            for (var i = 0; i < data.Count; i++) {
+                for (var j = 0; j < keys[i].length; j++) {
+                    var attribute = atr.indexOf(keys[i][j]);
+                    table[i][attribute] = values[i][j];
+                }                
+            }
+
+            // 테이블 compare을 기준으로 정렬
+            var compare = "id"
+            var temp;
+            for (var i=0; i<table.length; i++) {
+                for (var j=0; j<table.length-i-1; j++) {
+                    if (table[j][atr.indexOf(compare)] > table[j+1][atr.indexOf(compare)] || table[j][atr.indexOf(compare)] == undefined) {
+                        temp = table[j];
+                        table[j] = table[j+1];
+                        table[j+1] = temp;
+                    }
+                }
+            }
+
+            // 테이블 출력
+            document.write("<table border='1'><tr>");
+            for(var i = 0; i < atr.length; i++){
+                document.write("<td>" + atr[i] + "</td>");
+            }
+            document.write("</tr>");
+            for(var i = 0; i < table.length; i++){
+                document.write("<tr>");
+                for(var j = 0; j<table[0].length; j++){
+                    if(table[i][j] == undefined){
+                        document.write("<td></td>");
+                    }
+                    else{
+                        document.write("<td>" + table[i][j] + "</td>");
+                    }
+                }
+                document.write("</tr>");
+            }
+            document.write("</table>");
+
+        }
+        
+        function errorCall() {
+            alert("error");
+            location.href = "index.html";
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+{
+    "operation" : "create",
+    "tableName" : "Testing",
+    "payload" : {
+        "Item" : {
+            "id" : "1",
+            "name" : "Byun"
+        }
+    }
+}

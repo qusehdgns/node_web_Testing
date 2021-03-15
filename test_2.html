@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dialog</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+
+<style>
+    input {
+        width: 50px;
+        height: 15px;
+        font-size: 10px;
+    }
+</style>
+
+<body>
+    <button class="ui-button ui-widget ui-corner-all" onclick="inputData()">창 띄우기</button>
+    <script>
+        var count = 2;
+        var atr = new Array;
+        atr[0] = "id";
+        document.write("<link rel='stylesheet' href='//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css'>")
+        document.write("<div id='dialog' title='input' style='display: none'><table border = '1'><tr><td>속성명</td><td>" + atr[0] + "</td>");
+        for (var i = 1; i < count; i++) {
+            document.write("<td><input type='text' id = ''/></td>");
+        }
+        document.write("</tr><tr><td>속성값</td>");
+        for (var i = 0; i < count; i++) {
+            document.write("<td><input type='text' id = ''/></td>");
+        }
+        document.write("</tr></table>");
+        document.write("<p><button onclick='refresh_dialog();'>항목 추가</button>\t<button onclick='dialogclose();'>확인</button>\t<button onclick='dialogclose();'>취소</button></div>");
+
+        function inputData() {
+            $("#dialog").dialog({
+                modal: true
+            });
+        }
+
+        function refresh_dialog(){
+            count++;
+            $('#dialog').load(window.location.href + '#dialog');
+        }
+
+    </script>
+
+</body>
+
+</html>

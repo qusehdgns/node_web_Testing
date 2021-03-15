@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Table</title>
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="/js/func.js"></script>
+</head>
+
+<body>
+    <h1>잠시 기다려주세요...</h1>
+    <script type="text/javascript" language="javascript">
+        var list;
+        var test = "{\"operation\" : \"tablelist\", \"payload\": {}}";
+        $.ajax({
+            type: "POST",
+            url: "https://xr52cr0gg6.execute-api.us-east-2.amazonaws.com/Testing_1/",
+            dataType: 'json',
+            contentType: 'application/json',
+            data: test,
+            success: successCall,
+            error: errorCall
+        });
+
+        function successCall(data) {
+            document.write("<link rel='stylesheet' href='//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css'>");
+            list = data;
+            document.write("<div id = 'table_list'><table border = '1'>");
+            for (var i = 0; i < data.TableNames.length; i++) {
+                document.write("<tr><td><a href = 'item.html?table=" + data.TableNames[i] + "'>" + data.TableNames[i] + "</a></td></tr>");
+            }
+            document.write("</table><p>");
+
+            document.write("<button id = 'add' onclick = 'inputData()'>추가</button>\t");
+            document.write("<button id = 'delete' onclick = 'deletetable(list);'>삭제</button></div>");
+
+            document.write("<div id='dialog' title='input' style='display: none'>테이블명</br><input type='text' id='tname'></input><p>기본키 이름<br><input type='text' id='tkey'></input><p>" +
+                "자료형 선택</br><select name='type'><option value=''>선택</option><option value='String'>String</option>" +
+                "<option value='Number'>Number</option><option value='Binary'>Binary</option></select><p>" +
+                "<button onclick='inputTable();'>확인</button>&nbsp;<button onclick='dialogclose();'>취소</button></div>");
+        }
+
+        function inputData() {
+            $("#dialog").dialog({
+                modal: true
+            });
+        }
+
+        function inputTable() {
+            var t_name = $('#tname').val();
+            var k_name = $('#tkey').val();
+            var k_type_name = $("select[name=type]").val();
+            var k_type = k_type_name.substr(0,1);
+
+            var t_create_json = "{\"operation\" : \"tablecreate\", \"tableName\":\"" + t_name
+                + "\", \"payload\" : {\"KeySchema\":[{\"AttributeName\":\"" + k_name
+                + "\", \"KeyType\":\"HASH\"}],\"AttributeDefinitions\":[{\"AttributeName\":\"" + k_name
+                + "\", \"AttributeType\":\"" + k_type + "\"}],\"ProvisionedThroughput\" : {"
+                + "\"ReadCapacityUnits\":\"1\", \"WriteCapacityUnits\":\"1\"}}}"
+
+            if (t_name == "") {
+                alert("테이블명을 작성해주세요.");
+            } else if (t_name.length < 3 || t_name.length > 255){
+                alert("테이블명 3~255자");
+            } else if (k_name == "") {
+                alert("기본키 이름을 작성해주세요.");
+            } else if (k_type_name == "") {
+                alert("자료형을 선택해주세요.");
+            } else {
+                if (confirm("테이블명 : " + t_name + "\n키 명 : " + k_name + "\n키타입 : " + k_type_name)) {
+                    $.ajax({
+                        type: "POST",
+                        url: "https://xr52cr0gg6.execute-api.us-east-2.amazonaws.com/Testing_1/",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: t_create_json,
+                        success: function(){
+                            $("#dialog").dialog('close');
+                            setTimeout(function(){
+                                location.href = location.href;
+                            }, 1000);
+                        },
+                        error: errorCall
+                    })
+                } else {
+                    alert("다시 수정하여 주세요.");
+                }
+            }
+        }
+
+        function dialogclose() {
+            $("#dialog").dialog('close');
+        }
+
+        function deletetable(data) {
+            $("#table_list").remove();
+
+            document.write("<table border = '1'>");
+            for (var i = 0; i < data.TableNames.length; i++) {
+                document.write("<tr><td><input type='radio' name='tablename' value='" + data.TableNames[i] + "'/>" + data.TableNames[i] + "</td></tr>");
+            }
+            document.write("</table><p>");
+
+            document.write("<button id = 'check' onclick = 'checking();'>확인</button>\t");
+            document.write("<button id = 'return' onclick = 'refresh();'>뒤로</button>\t");
+        }
+
+        function checking() {
+            var select_table = $('input[name=tablename]:checked').val();
+            if (confirm(select_table + " 테이블을 삭제하시겠습니까?")) {
+                var order = "{\"operation\" : \"tabledelete\", \"tableName\" : \"" + select_table + "\", \"payload\": {}}";
+                $.ajax({
+                    type: "POST",
+                    url: "https://xr52cr0gg6.execute-api.us-east-2.amazonaws.com/Testing_1/",
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: order,
+                    success: infomation,
+                    error: errorCall
+                });
+            } else {
+                $('input[name=tablename]').removeAttr('checked'); //라디오버튼 체크 해제
+            }
+        }
+
+        function infomation() {
+            alert("삭제가 완료되었습니다.");
+            setTimeout(function(){
+                location.href = location.href;
+            }, 1000);
+        }
+
+        function errorCall() {
+            alert("error");
+            refresh();
+        }
+
+    </script>
+</body>
+
+</html>
